@@ -1,5 +1,16 @@
 
 
+#' *Single Site, Exploratory, Cross-Sectional*
+#'
+#' @param process_output the output of the `qvd_process` function
+#' @param display_outliers for boxplot output, a boolean to indicate whether outliers should be displayed; defaults to FALSE
+#' @param frequency_min an integer to establish a minimum amount of times a value should occur to be included in the output;
+#'                      aimed at trimming infrequently occurring outliers for a cleaner plot; defaults to 5
+#' @param value_type_filter a string or vector of strings to filter the graph to specific variables of interest
+#'
+#' @returns a halfeye density plot showing the density of the distribution for each variable with a boxplot underneath
+#'          showing the summary of the distribution
+#'
 qvd_ss_exp_cs <- function(process_output,
                           display_outliers = FALSE,
                           frequency_min = 5,
@@ -7,10 +18,10 @@ qvd_ss_exp_cs <- function(process_output,
 
   freq_dist <- process_output %>%
     mutate(tooltip = paste0('Variable: ', value_type,
-                            '\nMean: ', round(mean_val, 3),
-                            '\nMedian: ', round(median_val, 3),
-                            '\nQ1,Q3: ', round(q1_val, 3), ', ', round(q3_val,3),
-                            '\nSD: ', round(sd_val, 3))) %>%
+                            '\nRaw Mean: ', round(mean_val, 3),
+                            '\nRaw Median: ', round(median_val, 3),
+                            '\nRaw Q1,Q3: ', round(q1_val, 3), ', ', round(q3_val,3),
+                            '\nRaw SD: ', round(sd_val, 3))) %>%
     select(site, value_type, value_col, tooltip, frequency) %>%
     filter(!is.na(value_col), frequency > frequency_min) %>%
     uncount(frequency)
@@ -85,7 +96,15 @@ qvd_ss_exp_cs <- function(process_output,
 
 }
 
-
+#' *Single Site, Exploratory, Longitudinal*
+#'
+#' @param process_output the output of the `qvd_process` function
+#' @param value_type_filter a string or vector of strings to filter the graph to specific variables of interest
+#' @param summary_stat a string indicating the summary statistic that should be displayed on the plot; required for
+#'                     exploratory, longitudinal results; defaults to `mean`, but `median`, `q1`, `q3`, or `sd` are also accepted
+#'
+#' @returns a line plot displaying the summary_stat of choice across the time span
+#'
 qvd_ss_exp_la <- function(process_output,
                           value_type_filter = NULL,
                           summary_stat = 'mean'){
@@ -130,7 +149,13 @@ qvd_ss_exp_la <- function(process_output,
 
 }
 
-
+#' *Single Site, Anomaly Detection, Cross-Sectional*
+#'
+#' @param process_output the output of the `qvd_process` function
+#'
+#' @returns a bar plot displaying the proportion of values falling the user-selected number of SD away from the mean
+#'          lower and upper outliers are separated by the color of the bar
+#'
 qvd_ss_anom_cs <- function(process_output){
 
   grph <- process_output %>%
@@ -155,7 +180,14 @@ qvd_ss_anom_cs <- function(process_output){
 
 }
 
-
+#' *Single Site, Anomaly Detection, Longitudinal*
+#'
+#' @param process_output the output of the `qvd_process` function
+#' @param value_type_filter a string or vector of strings to filter the graph to specific variables of interest
+#'
+#' @returns a line plot showing the proportion of values falling the user-selected number of SD away from the mean at
+#'          each time point; lower and upper outliers are displayed as separate lines
+#'
 qvd_ss_anom_la <- function(process_output,
                            value_type_filter = NULL){
 
@@ -195,7 +227,16 @@ qvd_ss_anom_la <- function(process_output,
 
 }
 
-
+#' *Multi Site, Exploratory, Cross-Sectional*
+#'
+#' @param process_output the output of the `qvd_process` function
+#' @param display_outliers for boxplot output, a boolean to indicate whether outliers should be displayed; defaults to FALSE
+#' @param frequency_min an integer to establish a minimum amount of times a value should occur to be included in the output;
+#'                      aimed at trimming infrequently occurring outliers for a cleaner plot; defaults to 5
+#' @param value_type_filter a string or vector of strings to filter the graph to specific variables of interest
+#'
+#' @returns a plot with boxplots for the distributions at each site, stratified by variable
+#'
 qvd_ms_exp_cs <- function(process_output,
                           value_type_filter = NULL,
                           frequency_min = 5,
@@ -255,7 +296,15 @@ qvd_ms_exp_cs <- function(process_output,
   return(grph)
 }
 
-
+#' *Multi Site, Exploratory, Longitudinal*
+#'
+#' @param process_output the output of the `qvd_process` function
+#' @param value_type_filter a string or vector of strings to filter the graph to specific variables of interest
+#' @param summary_stat a string indicating the summary statistic that should be displayed on the plot; required for
+#'                     exploratory, longitudinal results; defaults to `mean`, but `median`, `q1`, `q3`, or `sd` are also accepted
+#'
+#' @returns a line plot displaying the summary_stat of interest across the time period for each site
+#'
 qvd_ms_exp_la <- function(process_output,
                           value_type_filter = NULL,
                           summary_stat = 'mean'){
@@ -300,7 +349,14 @@ qvd_ms_exp_la <- function(process_output,
 
 }
 
-
+#' *Multi Site, Anomaly Detection, Cross-Sectional*
+#'
+#' @param process_output the output of the `qvd_process` function
+#' @param value_type_filter a string or vector of strings to filter the graph to specific variables of interest
+#'
+#' @returns a radial lolipop graph displaying the KL divergence value for each site, indicating the divergence from
+#'          the all-site frequency distritbution
+#'
 qvd_ms_anom_cs <- function(process_output,
                            value_type_filter = NULL){
 
@@ -341,7 +397,21 @@ qvd_ms_anom_cs <- function(process_output,
 
 }
 
-
+#' *Multi Site, Anomaly Detection, Longitudinal*
+#'
+#' @param process_output the output of the `qvd_process` function
+#' @param value_type_filter a string or vector of strings to filter the graph to specific variables of interest
+#'
+#' @returns three graphs:
+#'    1) line graph that shows the smoothed euclidean_stat of a
+#'    variable across time computation with the Euclidean distance associated with each line
+#'    2) line graph that shows the raw euclidean_stat of a
+#'    variable across time computation with the Euclidean distance associated with each line
+#'    3) a bar graph with the Euclidean distance value for each site, with the average
+#'    euclidean_stat as the fill
+#'
+#' THIS GRAPH SHOWS ONLY ONE VALUE TYPE AT A TIME!
+#'
 qvd_ms_anom_la <- function(process_output,
                            value_type_filter){
 

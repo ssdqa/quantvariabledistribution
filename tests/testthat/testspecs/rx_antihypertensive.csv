@@ -1,0 +1,37 @@
+concept_id,concept_code,concept_name,vocabulary_id,cluster
+46275811,1656356,sacubitril 97 MG / valsartan 103 MG Oral Tablet [Entresto],RxNorm,multiclass_blend
+1314006,197379,atenolol 100 MG Oral Tablet,RxNorm,beta_blocker
+19018811,197380,atenolol 25 MG Oral Tablet,RxNorm,beta_blocker
+1314008,197381,atenolol 50 MG Oral Tablet,RxNorm,beta_blocker
+974199,197885,hydrochlorothiazide 12.5 MG / lisinopril 10 MG Oral Tablet,RxNorm,multiclass_blend
+974200,197886,hydrochlorothiazide 12.5 MG / lisinopril 20 MG Oral Tablet,RxNorm,multiclass_blend
+974201,197887,hydrochlorothiazide 25 MG / lisinopril 20 MG Oral Tablet,RxNorm,multiclass_blend
+1334459,198188,ramipril 2.5 MG Oral Capsule,RxNorm,ace_inhibitor
+19022749,200031,carvedilol 6.25 MG Oral Tablet,RxNorm,beta_blocker
+19022750,200032,carvedilol 12.5 MG Oral Tablet,RxNorm,beta_blocker
+19022781,200033,carvedilol 25 MG Oral Tablet,RxNorm,beta_blocker
+19022948,200095,irbesartan 150 MG Oral Tablet,RxNorm,arb
+19073094,308136,amlodipine 2.5 MG Oral Tablet,RxNorm,ccb
+19078106,310798,hydrochlorothiazide 25 MG Oral Tablet,RxNorm,thiazide
+1308250,311353,lisinopril 2.5 MG Oral Tablet,RxNorm,ace_inhibitor
+1308251,311354,lisinopril 5 MG Oral Tablet,RxNorm,ace_inhibitor
+19080128,314076,lisinopril 10 MG Oral Tablet,RxNorm,ace_inhibitor
+19080129,314077,lisinopril 20 MG Oral Tablet,RxNorm,ace_inhibitor
+19080218,314203,quinapril 40 MG Oral Tablet,RxNorm,ace_inhibitor
+1308851,349199,valsartan 80 MG Oral Tablet,RxNorm,arb
+19124247,636045,hydrochlorothiazide 25 MG / valsartan 320 MG Oral Tablet,RxNorm,multiclass_blend
+40163333,856457,propranolol hydrochloride 20 MG Oral Tablet,RxNorm,beta_blocker
+40163342,856519,propranolol hydrochloride 40 MG Oral Tablet,RxNorm,beta_blocker
+40166824,866412,24 HR metoprolol succinate 100 MG Extended Release Oral Tablet,RxNorm,beta_blocker
+40166828,866427,24 HR metoprolol succinate 25 MG Extended Release Oral Tablet,RxNorm,beta_blocker
+40166830,866436,24 HR metoprolol succinate 50 MG Extended Release Oral Tablet,RxNorm,beta_blocker
+40167202,866511,metoprolol tartrate 100 MG Oral Tablet,RxNorm,beta_blocker
+40167218,866514,metoprolol tartrate 50 MG Oral Tablet,RxNorm,beta_blocker
+40167213,866924,metoprolol tartrate 25 MG Oral Tablet,RxNorm,beta_blocker
+40169689,896762,labetalol hydrochloride 200 MG Oral Tablet,RxNorm,beta_blocker
+40171918,897685,verapamil hydrochloride 80 MG Oral Tablet [Calan],RxNorm,ccb
+40184187,979468,hydrochlorothiazide 12.5 MG / losartan potassium 50 MG Oral Tablet,RxNorm,multiclass_blend
+40184217,979471,hydrochlorothiazide 25 MG / losartan potassium 100 MG Oral Tablet,RxNorm,multiclass_blend
+40185276,979480,losartan potassium 100 MG Oral Tablet,RxNorm,arb
+40185280,979485,losartan potassium 25 MG Oral Tablet,RxNorm,arb
+40185304,979492,losartan potassium 50 MG Oral Tablet,RxNorm,arb

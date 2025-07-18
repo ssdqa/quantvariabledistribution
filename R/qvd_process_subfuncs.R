@@ -1,4 +1,33 @@
 
+#' Compute quantitative variable distribution
+#'
+#' @param qvd_value_file *tabular input* | dataframe or CSV file with information about each of the variables that should be
+#' examined in the function. contains the following columns:
+#' - `value_name` | *string* |
+#' - `domain_tbl` | *character* | CDM table where the value data is found
+#' - `value_field` | *character* | the name of the field with the quantitative variable OR the name of the person identifier column for patient count checks
+#' - `date_field` | *character* | a date field in the `domain_tbl` that should be used for over time analyses
+#' - `concept_field` | *character* | concept_id field with codes from the associated codeset (only needed when codeset is provided)
+#' - `codeset_name` | *character* | the name of the codeset file; DO NOT include the file extension; optional
+#' - `filter_logic` | *character* | a string indicating filter logic that should be applied to achieve the desired variable; optional
+#' @param cohort *tabular input* | A dataframe with the cohort of patients for your study. Should include the columns:
+#' - `person_id` / `patid` | *integer* / *character*
+#' - `start_date` | *date*
+#' - `end_date` | *date*
+#' - `site` | *character*
+#' @param grouped_list *vector* | the list of columns that should be used to group the variable table
+#' @param omop_or_pcornet *string* | Option to run the function using the OMOP or PCORnet CDM as the default CDM
+#'                        accepts `omop` or `pcornet`
+#' @param time *boolean* | a logical that tells the function whether you would like to look at the output over time
+#'
+#' @returns a dataframe with the frequency distribution for each value associated with the variable
+#'          of interest and summary statistics (mean, median, q1, q3, sd) describing the distribution
+#'
+#' @importFrom purrr set_names
+#' @importFrom purrr reduce
+#' @importFrom rlang parse_expr
+#' @importFrom rlang :=
+#'
 compute_quant_val_dist <- function(qvd_value_file,
                                    cohort = results_tbl('scd_cohort'),
                                    grouped_list = 'site',
@@ -53,8 +82,7 @@ compute_quant_val_dist <- function(qvd_value_file,
     }else{tbl_use <- tbl_use}
 
     ## Frequencies by patient count or value count
-    if(is.na(qvd_list[[i]]$value_field) |
-       qvd_list[[i]]$value_field == !!sym(person_col)){
+    if(is.na(qvd_list[[i]]$value_field) || qvd_list[[i]]$value_field == person_col){
 
       pt_cts <- tbl_use %>%
         group_by(!!sym(person_col), .add = TRUE) %>%
@@ -111,6 +139,18 @@ compute_quant_val_dist <- function(qvd_value_file,
 
 
 
+#' Compute Kullback-Liebler divergence
+#'
+#' @param frequency_tbl the output of `compute_quant_val_dist`
+#' @param kl_log_base a string indicating the log base to be used in the computations;
+#'                    defaults to `log2`, `log` and `log10` are also acceptable
+#'
+#' @returns a dataframe with the kullback-liebler divergence value for the site's
+#' distribution compared to the overall, all-site distribution
+#'
+#' @importFrom philentropy KL
+#' @importFrom tibble column_to_rownames
+#'
 compute_kl_divergence <- function(frequency_tbl,
                                   kl_log_base = 'log2'){
 
@@ -190,12 +230,30 @@ compute_kl_divergence <- function(frequency_tbl,
 }
 
 
+#' Euclidean distance for QVD
+#'
+#' @param fot_input_tbl the output of `compute_fot` when `compute_quant_val_dist` is
+#' used as the check_func input
+#' @param grp_vars list of columns that should be used to group the table
+#' @param euclidean_stat the statistic that should be computed across all sites to be used
+#' as a comparison to the same site-specific value (i.e. the distance from the site mean to the all site mean)
+#' defaults to `mean` but `median` is also accepted
+#'
+#' @returns a dataframe with the original stat value, the newly computed all site stat value,
+#'          and the euclidean distance between the two distributions stratified by each time point
+#'          and the additional grp_vars provided
+#'
+#' @importFrom stats loess
+#' @importFrom stats predict
+#' @importFrom stats frequency
+#'
 qvd_euclidean <- function(fot_input_tbl,
                           grp_vars,
-                          var_col,
                           euclidean_stat = 'mean'){
 
   update_grpvr <- grp_vars[!grp_vars %in% 'site']
+
+  var_col <- paste0(euclidean_stat, '_val')
 
   ms_at_cj <- squba.gen:::compute_at_cross_join(cj_tbl=fot_input_tbl,
                                                 cj_var_names = grp_vars)

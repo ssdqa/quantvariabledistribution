@@ -1,4 +1,73 @@
 
+#' Quantitative Variable Distribution
+#'
+#' This is a plausibility module that will evaluate the distribution of either quantitative
+#' variables (i.e. drug dosages) or the distribution of patient counts (i.e. patients with
+#' inpatient visits). The user will provide definitions for the variables to be
+#' examined (`qvd_value_file`). Sample versions of this input are included as
+#' data in the package and are accessible with `quantvariabledistribution::`.
+#' Results can optionally be stratified by site, age group, and/or time. This
+#' function is compatible with both the OMOP and the PCORnet CDMs based on the user's
+#' selection.
+#'
+#' @param cohort *tabular input* | A dataframe with the cohort of patients for your study. Should include the columns:
+#' - `person_id` / `patid` | *integer* / *character*
+#' - `start_date` | *date*
+#' - `end_date` | *date*
+#' - `site` | *character*
+#' @param qvd_value_file *tabular input* | dataframe or CSV file with information about each of the variables that should be
+#' examined in the function. contains the following columns:
+#' - `value_name` | *string* | a string label for the value variable
+#' - `domain_tbl` | *character* | CDM table where the value data is found
+#' - `value_field` | *character* | the name of the field with the quantitative variable OR the name of the person identifier column for patient count checks
+#' - `date_field` | *character* | a date field in the `domain_tbl` that should be used for over time analyses
+#' - `concept_field` | *character* | concept_id field with codes from the associated codeset (only needed when codeset is provided)
+#' - `codeset_name` | *character* | the name of the codeset file; DO NOT include the file extension; optional
+#' - `vocabulary_field` | *character* | *PCORNET ONLY* the name of the column where the vocabulary type associated with the concepts are stored (typically dx_type or px_type, where needed)
+#' - `filter_logic` | *character* | a string indicating filter logic that should be applied to achieve the desired variable; optional
+#' @param multi_or_single_site *string* | Option to run the function on a single vs multiple sites
+#' - `single`: run the function for a single site
+#' - `multi`: run the function for multiple sites
+#' @param anomaly_or_exploratory *string* | Option to conduct an exploratory or anomaly detection analysis. Exploratory analyses give a high
+#' level summary of the data to examine the fact representation within the cohort. Anomaly detection
+#' analyses are specialized to identify outliers within the cohort.
+#' @param omop_or_pcornet *string* | Option to run the function using the OMOP or PCORnet CDM as the default CDM
+#'                        accepts `omop` or `pcornet`
+#' @param time *boolean* | a logical that tells the function whether you would like to look at the output over time
+#' @param time_span *vector - length 2* | when time = TRUE, this argument defines the start and end dates for the time period of interest. should be
+#'                  formatted as c(start date, end date) in yyyy-mm-dd date format
+#' @param time_period *string* | when time = TRUE, this argument defines the distance between dates within the specified time period. defaults
+#'                    to `year`, but other time periods such as `month` or `week` are also acceptable
+#' @param age_groups *tabular input* | If you would like to stratify the results by age group,  create a table or CSV file with the following
+#'                    columns and include it as the `age_groups` function parameter:
+#' - `min_age` | *integer* | the minimum age for the group (i.e. 10)
+#' - `max_age` | *integer* | the maximum age for the group (i.e. 20)
+#' - `group` | *character* | a string label for the group (i.e. 10-20, Young Adult, etc.)
+#'
+#' If you would *not* like to stratify by age group, leave the argument as NULL
+#' @param sd_threshold *integer* | value indicating the number of standard deviations a value should
+#'                      fall away from the mean to be considered an outlier; used for single site,
+#'                      anomaly detection configurations
+#' @param kl_log_base *string* | string indicating the log base that should be used for the Kullback-Liebler
+#'                     divergence computation; acceptable values are: `log`, `log2`, `log10`; defaults to `log2`
+#' @param euclidean_stat *string* | string indicating the summary statistic that should be used for the
+#'                        euclidean distance computation; defaults to `mean`, `median` is also accepted
+#'
+#' @returns a dataframe with the frequency distribution for each value associated with the variable
+#'          of interest and summary statistics (mean, median, q1, q3, sd) describing the distribution
+#'
+#' @importFrom stats sd
+#' @importFrom stats median
+#' @importFrom stats quantile
+#' @import squba.gen
+#' @import argos
+#' @import cli
+#' @import dplyr
+#' @import tidyr
+#' @importFrom magrittr %>%
+#'
+#' @export
+#'
 qvd_process <- function(cohort,
                         qvd_value_file,
                         multi_or_single_site = 'single',
@@ -116,7 +185,6 @@ qvd_process <- function(cohort,
       qvd_final <- qvd_euclidean(fot_input_tbl = qvd_tbl %>%
                                    replace_site_col(),
                                  grp_vars = c('site', 'value_type'),
-                                 var_col = paste0(euclidean_stat, '_val'),
                                  euclidean_stat = euclidean_stat)
 
     }else{qvd_final <- qvd_tbl}

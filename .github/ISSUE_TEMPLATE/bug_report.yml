@@ -1,0 +1,50 @@
+name: Bug Report
+description: Quantitative Variable Distribution Bug Report
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees:
+  - wieandk
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for using the SQUBA ecosystem! Please complete this form to submit a bug report for the Quantitative Variable Distribution module.
+  - type: checkboxes
+    attributes:
+      label: Function
+      description: Which function produced an error?
+      options:
+        - label: qvd_process
+        - label: qvd_output
+  - type: dropdown
+    attributes:
+      label: Function Configuration
+      description: Which configuration produced the error?
+      multiple: false
+      options:
+        - "Single Site, Exploratory, Cross-Sectional"
+        - "Single Site, Anomaly Detection, Cross-Sectional"
+        - "Multi-Site, Exploratory, Cross-Sectional"
+        - "Multi-Site, Anomaly Detection, Cross-Sectional"
+        - "Single Site, Exploratory, Longitudinal"
+        - "Single Site, Anomaly Detection, Longitudinal"
+        - "Multi-Site, Exploratory, Longitudinal"
+        - "Multi-Site, Anomaly Detection, Longitudinal"
+  - type: dropdown
+    attributes:
+      label: Relational Database Backend
+      description: What database backend do you use to access your data?
+      multiple: false
+      options:
+        - "Postgres"
+        - "SQL Server"
+        - "Snowflake"
+        - "Other"
+  - type: textarea
+    attributes:
+      label: Error Message
+      description: Please paste the exact error message that was produced into the box below.
+  - type: textarea
+    attributes:
+      label: Error Description
+      description: Please describe the error you encountered
