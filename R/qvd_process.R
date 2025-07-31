@@ -123,7 +123,7 @@ qvd_process <- function(cohort,
     if(anomaly_or_exploratory == 'anomaly' && multi_or_single_site == 'single'){
 
       qvd_final <- qvd_tbl %>%
-        uncount(frequency) %>%
+        uncount(value_freq) %>%
         group_by(!!sym(site_col), value_type) %>%
         mutate(total_vals = n()) %>%
         mutate(zscore = (value_col - mean_val) / sd_val,
@@ -159,7 +159,7 @@ qvd_process <- function(cohort,
 
     if(anomaly_or_exploratory == 'anomaly' && multi_or_single_site == 'single'){
       alltime_mean <- qvd_tbl %>%
-        uncount(frequency) %>%
+        uncount(value_freq) %>%
         group_by(!!sym(site_col), value_type) %>%
         summarise(alltime_mean = mean(value_col, na.rm = TRUE),
                   alltime_sd = sd(value_col, na.rm = TRUE),
@@ -167,7 +167,7 @@ qvd_process <- function(cohort,
                   alltime_sd = ifelse(is.nan(alltime_sd), NA, alltime_sd))
 
       qvd_final <- qvd_tbl %>%
-        uncount(frequency) %>%
+        uncount(value_freq) %>%
         left_join(alltime_mean) %>%
         group_by(!!sym(site_col), time_start, time_increment, value_type) %>%
         mutate(total_vals = n()) %>%

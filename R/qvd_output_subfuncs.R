@@ -22,9 +22,9 @@ qvd_ss_exp_cs <- function(process_output,
                             '\nRaw Median: ', round(median_val, 3),
                             '\nRaw Q1,Q3: ', round(q1_val, 3), ', ', round(q3_val,3),
                             '\nRaw SD: ', round(sd_val, 3))) %>%
-    select(site, value_type, value_col, tooltip, frequency) %>%
-    filter(!is.na(value_col), frequency > frequency_min) %>%
-    uncount(frequency)
+    select(site, value_type, value_col, tooltip, value_freq) %>%
+    filter(!is.na(value_col), value_freq > frequency_min) %>%
+    uncount(value_freq)
 
   mean_input <- process_output %>%
     distinct(site, value_type, mean_val)
@@ -267,9 +267,9 @@ qvd_ms_exp_cs <- function(process_output,
                             '\nMedian: ', round(median_val, 3),
                             '\nQ1,Q3: ', round(q1_val, 3), ', ', round(q3_val,3),
                             '\nSD: ', round(sd_val, 3))) %>%
-    select(site, value_type, value_col, tooltip, frequency) %>%
-    filter(!is.na(value_col), frequency > frequency_min) %>%
-    uncount(frequency)
+    select(site, value_type, value_col, tooltip, value_freq) %>%
+    filter(!is.na(value_col), value_freq > frequency_min) %>%
+    uncount(value_freq)
 
   mean_input <- process_output %>%
     distinct(site, value_type, mean_val)

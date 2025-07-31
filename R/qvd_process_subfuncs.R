@@ -92,14 +92,14 @@ compute_quant_val_dist <- function(qvd_value_file,
       get_values <- pt_cts %>%
         ungroup(!!sym(person_col)) %>%
         group_by(value_col, .add = TRUE) %>%
-        summarise(frequency = n()) %>%
+        summarise(value_freq = n()) %>%
         mutate(value_type = qvd_list[[i]]$value_name)
 
     }else{
 
       get_values <- tbl_use %>%
         group_by(!!sym(qvd_list[[i]]$value_field), .add = TRUE) %>%
-        summarise(frequency = n()) %>%
+        summarise(value_freq = n()) %>%
         collect() %>%
         rename('value_col' := !!sym(qvd_list[[i]]$value_field)) %>%
         mutate(value_type = qvd_list[[i]]$value_name)
@@ -108,7 +108,7 @@ compute_quant_val_dist <- function(qvd_value_file,
 
     ## Summarise numerical distribution
     stat_sum <- get_values %>%
-      uncount(frequency) %>%
+      uncount(value_freq) %>%
       group_by(value_type, .add = TRUE) %>%
       summarise(mean_val = mean(value_col, na.rm = TRUE),
                 median_val = median(value_col, na.rm = TRUE),
@@ -166,11 +166,11 @@ compute_kl_divergence <- function(frequency_tbl,
       ungroup() %>%
       filter(value_type == i) %>%
       arrange(value_col) %>%
-      select(value_col, frequency) %>%
+      select(value_col, value_freq) %>%
       group_by(value_col) %>%
-      summarise(frequency = sum(frequency)) %>%
+      summarise(value_freq = sum(value_freq)) %>%
       ungroup() %>%
-      rename('network_frequency' = frequency) %>%
+      rename('network_frequency' = value_freq) %>%
       mutate(network_total = sum(network_frequency),
              network_prop = network_frequency / network_total) %>%
       select(value_col, network_prop)
@@ -183,8 +183,8 @@ compute_kl_divergence <- function(frequency_tbl,
         ungroup() %>%
         filter(value_type == i, site == k) %>%
         arrange(value_col) %>%
-        select(value_col, frequency) %>%
-        rename('site_frequency' = frequency) %>%
+        select(value_col, value_freq) %>%
+        rename('site_frequency' = value_freq) %>%
         mutate(site_total = sum(site_frequency),
                site_prop = site_frequency / site_total) %>%
         select(value_col, site_prop)
@@ -259,7 +259,7 @@ qvd_euclidean <- function(fot_input_tbl,
                                                 cj_var_names = grp_vars)
 
   allsite_stats <- ms_at_cj %>%
-    uncount(frequency) %>%
+    uncount(value_freq) %>%
     group_by(!!!syms(update_grpvr), time_start, time_increment) %>%
     summarise(allsite_mean = mean(value_col, na.rm = TRUE),
               allsite_median = median(value_col, na.rm = TRUE),
@@ -269,7 +269,7 @@ qvd_euclidean <- function(fot_input_tbl,
     mutate(across(where(is.numeric), ~replace_na(., NA)))
 
   site_summ <- ms_at_cj %>%
-    select(-c(value_col, frequency)) %>%
+    select(-c(value_col, value_freq)) %>%
     distinct()
 
   allsite_stat <- paste0('allsite_', euclidean_stat)
