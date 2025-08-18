@@ -4,12 +4,22 @@
 \alias{qvd_ms_anom_la}
 \title{\emph{Multi Site, Anomaly Detection, Longitudinal}}
 \usage{
-qvd_ms_anom_la(process_output, value_type_filter)
+qvd_ms_anom_la(
+  process_output,
+  value_type_filter,
+  large_n = FALSE,
+  large_n_sites = NULL
+)
 }
 \arguments{
 \item{process_output}{the output of the \code{qvd_process} function}
 
 \item{value_type_filter}{a string or vector of strings to filter the graph to specific variables of interest}
+
+\item{large_n}{a boolean indicating whether the large N visualization, intended for a high
+volume of sites, should be used; defaults to FALSE}
+
+\item{large_n_sites}{a vector of site names that can optionally generate a filtered visualization}
 }
 \value{
 three graphs:

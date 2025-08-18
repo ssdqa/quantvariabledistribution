@@ -8,7 +8,9 @@ qvd_ms_exp_cs(
   process_output,
   value_type_filter = NULL,
   frequency_min = 5,
-  display_outliers = FALSE
+  display_outliers = FALSE,
+  large_n = FALSE,
+  large_n_sites = NULL
 )
 }
 \arguments{
@@ -20,6 +22,11 @@ qvd_ms_exp_cs(
 aimed at trimming infrequently occurring outliers for a cleaner plot; defaults to 5}
 
 \item{display_outliers}{for boxplot output, a boolean to indicate whether outliers should be displayed; defaults to FALSE}
+
+\item{large_n}{a boolean indicating whether the large N visualization, intended for a high
+volume of sites, should be used; defaults to FALSE}
+
+\item{large_n_sites}{a vector of site names that can optionally generate a filtered visualization}
 }
 \value{
 a plot with boxplots for the distributions at each site, stratified by variable

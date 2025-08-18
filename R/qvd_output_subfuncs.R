@@ -1,5 +1,4 @@
 
-
 #' *Single Site, Exploratory, Cross-Sectional*
 #'
 #' @param process_output the output of the `qvd_process` function
@@ -234,13 +233,18 @@ qvd_ss_anom_la <- function(process_output,
 #' @param frequency_min an integer to establish a minimum amount of times a value should occur to be included in the output;
 #'                      aimed at trimming infrequently occurring outliers for a cleaner plot; defaults to 5
 #' @param value_type_filter a string or vector of strings to filter the graph to specific variables of interest
+#' @param large_n a boolean indicating whether the large N visualization, intended for a high
+#'                volume of sites, should be used; defaults to FALSE
+#' @param large_n_sites a vector of site names that can optionally generate a filtered visualization
 #'
 #' @returns a plot with boxplots for the distributions at each site, stratified by variable
 #'
 qvd_ms_exp_cs <- function(process_output,
                           value_type_filter = NULL,
                           frequency_min = 5,
-                          display_outliers = FALSE){
+                          display_outliers = FALSE,
+                          large_n = FALSE,
+                          large_n_sites = NULL){
 
   if(display_outliers){
     outlier_color = 'lightgray'
@@ -274,21 +278,61 @@ qvd_ms_exp_cs <- function(process_output,
   mean_input <- process_output %>%
     distinct(site, value_type, mean_val)
 
-  grph <- freq_dist %>%
-    ggplot(aes(x = site, y = value_col, fill = site)) +
-    geom_boxplot_interactive(aes(tooltip = tooltip),
-                             outliers = display_outliers,
-                             outlier.colour = outlier_color,
-                             alpha = 0.5) +
-    geom_point(data = mean_input, aes(x = site, y = mean_val, fill = site),
-               shape = 23, color = 'blue') +
-    facet_wrap(~value_type, scales = 'free', ncol = 2) +
-    scale_fill_squba() +
-    theme_minimal() +
-    theme(legend.position = 'none',
-          axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
-          axis.title.x = element_blank()) +
-    labs(y = 'Value')
+  if(!large_n){
+    grph <- freq_dist %>%
+      ggplot(aes(x = site, y = value_col, fill = site)) +
+      geom_boxplot_interactive(aes(tooltip = tooltip),
+                               outliers = display_outliers,
+                               outlier.colour = outlier_color,
+                               alpha = 0.5) +
+      geom_point(data = mean_input, aes(x = site, y = mean_val, fill = site),
+                 shape = 23, color = 'blue') +
+      facet_wrap(~value_type, scales = 'free', ncol = 2) +
+      scale_fill_squba() +
+      theme_minimal() +
+      theme(legend.position = 'none',
+            axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+            axis.title.x = element_blank()) +
+      labs(y = 'Value')
+  }else{
+    allsite_summs <- freq_dist %>%
+      mutate(site = 'All Sites') %>%
+      group_by(site, value_type) %>%
+      summarise(median_val = median(value_col, na.rm = TRUE))
+
+    if(!is.null(large_n_sites)){
+      freq_dist <- freq_dist %>% filter(site %in% large_n_sites)
+    }else{
+      freq_dist <- freq_dist %>%
+        select(site, value_type, value_col) %>%
+        mutate(site = 'All Sites') %>%
+        left_join(allsite_summs) %>%
+        mutate(tooltip = paste0('Variable: ', value_type,
+                                '\nMedian: ', round(median_val, 3)))
+    }
+
+    grph <- freq_dist %>%
+      ggplot(aes(x = site, y = value_col, fill = site)) +
+      geom_boxplot_interactive(aes(tooltip = tooltip),
+                               outliers = display_outliers,
+                               outlier.colour = outlier_color,
+                               alpha = 0.5) +
+      facet_wrap(~value_type, scales = 'free', ncol = 2) +
+      scale_fill_squba() +
+      theme_minimal() +
+      theme(legend.position = 'none',
+            axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+            axis.title.x = element_blank()) +
+      labs(y = 'Value')
+
+    if(!is.null(large_n_sites)){
+      grph <- grph +
+        geom_point(data = mean_input %>% filter(site %in% large_n_sites),
+                   aes(x = site, y = mean_val, fill = site),
+                   shape = 23, color = 'blue') +
+        geom_hline(data = allsite_summs, aes(yintercept = median_val), linetype = 'dashed', color = 'blue')
+    }
+  }
 
   grph[['metadata']] <- tibble('pkg_backend' = 'ggiraph',
                                'tooltip' = TRUE)
@@ -302,12 +346,17 @@ qvd_ms_exp_cs <- function(process_output,
 #' @param value_type_filter a string or vector of strings to filter the graph to specific variables of interest
 #' @param summary_stat a string indicating the summary statistic that should be displayed on the plot; required for
 #'                     exploratory, longitudinal results; defaults to `mean`, but `median`, `q1`, `q3`, or `sd` are also accepted
+#' @param large_n a boolean indicating whether the large N visualization, intended for a high
+#'                volume of sites, should be used; defaults to FALSE
+#' @param large_n_sites a vector of site names that can optionally generate a filtered visualization
 #'
 #' @returns a line plot displaying the summary_stat of interest across the time period for each site
 #'
 qvd_ms_exp_la <- function(process_output,
                           value_type_filter = NULL,
-                          summary_stat = 'mean'){
+                          summary_stat = 'mean',
+                          large_n = FALSE,
+                          large_n_sites = NULL){
 
   if(is.null(value_type_filter)){
     process_output <- process_output
@@ -323,24 +372,66 @@ qvd_ms_exp_la <- function(process_output,
     }
   }
 
-  grph <- process_output %>%
+  in_dat <- process_output %>%
     distinct(site, time_start, value_type, mean_val, median_val,
              q1_val, q3_val, sd_val) %>%
     mutate(tooltip = paste0('Variable: ', value_type,
                             '\nMean: ', round(mean_val, 3),
                             '\nMedian: ', round(median_val, 3),
                             '\nQ1,Q3: ', round(q1_val, 3), ', ', round(q3_val,3),
-                            '\nSD: ', round(sd_val, 3))) %>%
-    ggplot(aes(x = time_start, y = !!sym(paste0(summary_stat, '_val')),
-               color = site, group = site, text = tooltip)) +
-    geom_line() +
-    geom_point() +
-    facet_grid(rows = 'value_type', scales = 'free', switch = 'y') +
-    theme_bw() +
-    scale_color_squba() +
-    labs(x = 'Time',
-         y = stringr::str_to_sentence(summary_stat),
-         color = 'Site')
+                            '\nSD: ', round(sd_val, 3)))
+
+  if(!large_n){
+    grph <- in_dat %>%
+      ggplot(aes(x = time_start, y = !!sym(paste0(summary_stat, '_val')),
+                 color = site, group = site, text = tooltip)) +
+      geom_line() +
+      geom_point() +
+      facet_grid(rows = 'value_type', scales = 'free', switch = 'y') +
+      theme_bw() +
+      scale_color_squba() +
+      labs(x = 'Time',
+           y = stringr::str_to_sentence(summary_stat),
+           color = 'Site')
+  }else{
+    allsite_summ <- process_output %>%
+      select(time_start, value_col, value_freq, value_type) %>%
+      uncount(value_freq) %>%
+      group_by(time_start, value_type)
+
+    if(summary_stat == 'mean'){
+      allsite_summ <- allsite_summ %>% summarise(mean_val = mean(value_col))
+    }else if(summary_stat == 'median'){
+      allsite_summ <- allsite_summ %>% summarise(median_val = median(value_col))
+    }else if(summary_stat == 'q1'){
+      allsite_summ <- allsite_summ %>% summarise(q1_val = quantile(value_col, 0.25))
+    }else if(summary_stat == 'q3'){
+      allsite_summ <- allsite_summ %>% summarise(q3_val = quantile(value_col, 0.75))
+    }else{
+      allsite_summ <- allsite_summ %>% summarise(sd_val = sd(value_col))
+    }
+
+    grph <- allsite_summ %>%
+      mutate(site = paste0('All Site ', summary_stat),
+             tooltip = paste0('Variable: ', value_type,
+                              '\n', summary_stat, ': ', !!sym(paste0(summary_stat, '_val')))) %>%
+      ggplot(aes(x = time_start, y = !!sym(paste0(summary_stat, '_val')),
+                 color = site, group = site, text = tooltip)) +
+      geom_line() +
+      geom_point() +
+      facet_grid(rows = 'value_type', scales = 'free', switch = 'y') +
+      theme_bw() +
+      scale_color_squba() +
+      labs(x = 'Time',
+           y = stringr::str_to_sentence(summary_stat),
+           color = 'Site')
+
+    if(!is.null(large_n_sites)){
+      grph <- grph +
+        geom_line(data = in_dat %>% filter(site %in% large_n_sites)) +
+        geom_point(data = in_dat %>% filter(site %in% large_n_sites))
+    }
+  }
 
   grph[['metadata']] <- tibble('pkg_backend' = 'plotly',
                                'tooltip' = TRUE)
@@ -353,12 +444,17 @@ qvd_ms_exp_la <- function(process_output,
 #'
 #' @param process_output the output of the `qvd_process` function
 #' @param value_type_filter a string or vector of strings to filter the graph to specific variables of interest
+#' @param large_n a boolean indicating whether the large N visualization, intended for a high
+#'                volume of sites, should be used; defaults to FALSE
+#' @param large_n_sites a vector of site names that can optionally generate a filtered visualization
 #'
 #' @returns a radial lolipop graph displaying the KL divergence value for each site, indicating the divergence from
 #'          the all-site frequency distritbution
 #'
 qvd_ms_anom_cs <- function(process_output,
-                           value_type_filter = NULL){
+                           value_type_filter = NULL,
+                           large_n = FALSE,
+                           large_n_sites = NULL){
 
   if(is.null(value_type_filter)){
     process_output <- process_output
@@ -374,21 +470,45 @@ qvd_ms_anom_cs <- function(process_output,
     }
   }
 
-  grph <- process_output %>%
-    filter(!is.na(kl)) %>%
-    mutate(tooltip = paste0('Site: ', site,
-                            '\nKullback-Leibler: ', round(kl, 3))) %>%
-    ggplot(aes(x = site, y = kl, tooltip = tooltip)) +
-    coord_radial(r.axis.inside = FALSE, rotate.angle = TRUE) +
-    guides(theta = guide_axis_theta(angle = 0)) +
-    geom_segment(aes(x = site, xend = site, y = 0, yend = kl), color = 'navy') +
-    geom_point_interactive(aes(color = site), size = 2) +
-    scale_color_squba() +
-    facet_wrap(~value_type, scales = 'free_y', ncol = 2) +
-    theme_minimal() +
-    theme(legend.position = 'none') +
-    labs(y = '',
-         x = 'Kullback-Leibler Divergence')
+  if(!large_n){
+    grph <- process_output %>%
+      filter(!is.na(kl)) %>%
+      mutate(tooltip = paste0('Site: ', site,
+                              '\nKullback-Leibler: ', round(kl, 3))) %>%
+      ggplot(aes(x = site, y = kl, tooltip = tooltip)) +
+      coord_radial(r.axis.inside = FALSE, rotate.angle = TRUE) +
+      guides(theta = guide_axis_theta(angle = 0)) +
+      geom_segment(aes(x = site, xend = site, y = 0, yend = kl), color = 'navy') +
+      geom_point_interactive(aes(color = site), size = 2) +
+      scale_color_squba() +
+      facet_wrap(~value_type, scales = 'free_y', ncol = 2) +
+      theme_minimal() +
+      theme(legend.position = 'none') +
+      labs(y = '',
+           x = 'Kullback-Leibler Divergence')
+  }else{
+
+    grph <- process_output %>%
+      filter(!is.na(kl)) %>%
+      ggplot(aes(x = kl)) +
+      geom_boxplot(aes(y = value_type)) +
+      scale_color_squba() +
+      facet_wrap(~value_type, scales = 'free', ncol = 2) +
+      theme_minimal() +
+      theme(axis.text.y = element_blank()) +
+      labs(y = '',
+           x = 'Kullback-Leibler Divergence')
+
+    if(!is.null(large_n_sites)){
+      grph <- grph +
+        geom_point_interactive(data = process_output %>% filter(site %in% large_n_sites),
+                               aes(y = value_type, tooltip = round(kl, 4), color = site))
+    }else{
+      grph <- grph +
+        geom_point_interactive(data = process_output,
+                               aes(y = value_type, tooltip = round(kl, 4)), color = 'gray', alpha = 0.5)
+    }
+  }
 
   grph[['metadata']] <- tibble('pkg_backend' = 'ggiraph',
                                'tooltip' = TRUE)
@@ -401,6 +521,9 @@ qvd_ms_anom_cs <- function(process_output,
 #'
 #' @param process_output the output of the `qvd_process` function
 #' @param value_type_filter a string or vector of strings to filter the graph to specific variables of interest
+#' @param large_n a boolean indicating whether the large N visualization, intended for a high
+#'                volume of sites, should be used; defaults to FALSE
+#' @param large_n_sites a vector of site names that can optionally generate a filtered visualization
 #'
 #' @returns three graphs:
 #'    1) line graph that shows the smoothed euclidean_stat of a
@@ -413,7 +536,9 @@ qvd_ms_anom_cs <- function(process_output,
 #' THIS GRAPH SHOWS ONLY ONE VALUE TYPE AT A TIME!
 #'
 qvd_ms_anom_la <- function(process_output,
-                           value_type_filter){
+                           value_type_filter,
+                           large_n = FALSE,
+                           large_n_sites = NULL){
 
   if(is.null(value_type_filter) | length(value_type_filter) > 1){
     cli::cli_abort('Please choose one value type to visualize for this graph.')
@@ -431,9 +556,15 @@ qvd_ms_anom_la <- function(process_output,
     rename(stat_value = allsite_var) %>%
     mutate(site=paste0('all site ', tolower(stat_lab))) %>%
     mutate(text_smooth=paste0("Site: ", site,
-                              "\n", stat_lab, ": ",stat_value),
+                              "\n", stat_lab, ": ",round(stat_value, 4)),
            text_raw=paste0("Site: ", site,
-                           "\n", stat_lab, ": ",stat_value))
+                           "\n", stat_lab, ": ",round(stat_value, 4)))
+
+  iqr_dat <- filt_op %>%
+    select(time_start,value_type,!!sym(stat_col)) %>% distinct() %>%
+    group_by(time_start, value_type) %>%
+    summarise(q1 = quantile(!!sym(stat_col), 0.25),
+              q3 = quantile(!!sym(stat_col), 0.75))
 
   dat_to_plot <-
     filt_op %>%
@@ -441,68 +572,120 @@ qvd_ms_anom_la <- function(process_output,
     mutate(text_smooth=paste0("Site: ", site,
                               "\n","Euclidean Distance from All-Site ", stat_lab, ': ', dist_eucl_mean),
            text_raw=paste0("Site: ", site,
-                           "\n","Site ", stat_lab, ": ",stat_value,
+                           "\n","Site ", stat_lab, ": ",round(stat_value, 4),
                            "\n","Site Smoothed ", stat_lab, ": ",site_loess,
                            "\n","Euclidean Distance from All-Site ", stat_lab, ': ', dist_eucl_mean))
 
-  p <- dat_to_plot %>%
-    ggplot(aes(y = stat_value, x = time_start, color = site, group = site, text = text_smooth)) +
-    geom_line(data=allsites, linewidth=1.1) +
-    geom_smooth(se=TRUE,alpha=0.1,linewidth=0.5, formula = y ~ x) +
-    scale_color_squba() +
-    theme_minimal() +
-    #theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1)) +
-    labs(y = paste0(stat_lab, ' (Loess)'),
-         x = 'Time',
-         title = paste0('Smoothed ', stat_lab, ' of ', value_type_filter, ' Across Time'))
+  if(!large_n){
+    p <- dat_to_plot %>%
+      ggplot(aes(y = stat_value, x = time_start, color = site, group = site, text = text_smooth)) +
+      geom_line(data=allsites, linewidth=1.1) +
+      geom_smooth(se=TRUE,alpha=0.1,linewidth=0.5, formula = y ~ x) +
+      scale_color_squba() +
+      theme_minimal() +
+      labs(y = paste0(stat_lab, ' (Loess)'),
+           x = 'Time',
+           title = paste0('Smoothed ', stat_lab, ' of ', value_type_filter, ' Across Time'))
 
-  q <- dat_to_plot %>%
-    ggplot(aes(y = stat_value, x = time_start, color = site,
-               group=site, text=text_raw)) +
-    scale_color_squba() +
-    geom_line(data=allsites,linewidth=1.1) +
-    geom_line(linewidth=0.2) +
-    theme_minimal() +
-    #theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1)) +
-    labs(x = 'Time',
-         y = stat_lab,
-         title = paste0(stat_lab, ' of ', value_type_filter, ' Across Time'))
+    q <- dat_to_plot %>%
+      ggplot(aes(y = stat_value, x = time_start, color = site,
+                 group=site, text=text_raw)) +
+      scale_color_squba() +
+      geom_line(data=allsites,linewidth=1.1) +
+      geom_line(linewidth=0.2) +
+      theme_minimal() +
+      labs(x = 'Time',
+           y = stat_lab,
+           title = paste0(stat_lab, ' of ', value_type_filter, ' Across Time'))
 
-  t <- dat_to_plot %>%
-    distinct(site, dist_eucl_mean, site_loess) %>%
-    group_by(site, dist_eucl_mean) %>%
-    summarise(mean_site_loess = mean(site_loess)) %>%
-    mutate(tooltip = paste0('Site: ', site,
-                            '\nEuclidean Distance: ', dist_eucl_mean,
-                            '\nAverage Loess ', stat_lab, ': ', mean_site_loess)) %>%
-    ggplot(aes(x = site, y = dist_eucl_mean, fill = mean_site_loess, tooltip = tooltip)) +
-    geom_col_interactive() +
-    # geom_text(aes(label = dist_eucl_mean), vjust = 2, size = 3,
-    #           show.legend = FALSE) +
-    coord_radial(r.axis.inside = FALSE, rotate.angle = TRUE) +
-    guides(theta = guide_axis_theta(angle = 0)) +
-    theme_minimal() +
-    scale_fill_squba(palette = 'diverging', discrete = FALSE) +
-    # theme(legend.position = 'bottom',
-    #       legend.text = element_text(angle = 45, vjust = 0.9, hjust = 1),
-    #       axis.text.x = element_text(face = 'bold'))
-    labs(fill = paste0(stat_lab,  '\n(Loess)'),
-         y ='Euclidean Distance',
-         x = '',
-         title = paste0('Euclidean Distance for ', value_type_filter))
+    t <- dat_to_plot %>%
+      distinct(site, dist_eucl_mean, site_loess) %>%
+      group_by(site, dist_eucl_mean) %>%
+      summarise(mean_site_loess = mean(site_loess)) %>%
+      mutate(tooltip = paste0('Site: ', site,
+                              '\nEuclidean Distance: ', dist_eucl_mean,
+                              '\nAverage Loess ', stat_lab, ': ', mean_site_loess)) %>%
+      ggplot(aes(x = site, y = dist_eucl_mean, fill = mean_site_loess, tooltip = tooltip)) +
+      geom_segment(aes(x = site, xend = site, y = 0, yend = dist_eucl_mean), color = 'navy') +
+      geom_point_interactive(aes(fill = mean_site_loess), shape = 21, size = 4) +
+      coord_radial(r.axis.inside = FALSE, rotate.angle = TRUE) +
+      guides(theta = guide_axis_theta(angle = 0)) +
+      theme_minimal() +
+      scale_fill_squba(palette = 'diverging', discrete = FALSE) +
+      labs(fill = paste0(stat_lab,  '\n(Loess)'),
+           y ='Euclidean Distance',
+           x = '',
+           title = paste0('Euclidean Distance for ', value_type_filter))
 
-  p[['metadata']] <- tibble('pkg_backend' = 'plotly',
-                            'tooltip' = TRUE)
+    p[['metadata']] <- tibble('pkg_backend' = 'plotly',
+                              'tooltip' = TRUE)
 
-  q[['metadata']] <- tibble('pkg_backend' = 'plotly',
-                            'tooltip' = TRUE)
+    q[['metadata']] <- tibble('pkg_backend' = 'plotly',
+                              'tooltip' = TRUE)
 
-  t[['metadata']] <- tibble('pkg_backend' = 'ggiraph',
-                            'tooltip' = TRUE)
+    t[['metadata']] <- tibble('pkg_backend' = 'ggiraph',
+                              'tooltip' = TRUE)
 
-  output <- list(p,
-                 q,
-                 t)
+    output <- list(p,q,t)
+  }else{
+    q <- ggplot(allsites, aes(x = time_start)) +
+      geom_ribbon(data = iqr_dat, aes(ymin = q1, ymax = q3), alpha = 0.2) +
+      geom_line(aes(y = stat_value, color = site, group = site), linewidth=1.1) +
+      geom_point_interactive(aes(y = stat_value, color = site, group = site, tooltip=text_raw)) +
+      theme_minimal() +
+      scale_color_squba() +
+      labs(x = 'Time',
+           y = 'Proportion',
+           title = paste0(stat_lab, ' of ', value_type_filter, ' Across Time'),
+           subtitle = paste0('Ribbon boundaries are IQR based on site ', stat_lab, 's'))
+
+    if(is.null(large_n_sites)){
+
+      t <- dat_to_plot %>%
+        distinct(value_type, dist_eucl_mean) %>%
+        ggplot(aes(x = dist_eucl_mean, y = value_type)) +
+        geom_boxplot() +
+        geom_point_interactive(color = 'gray',
+                               alpha = 0.75, aes(tooltip = dist_eucl_mean)) +
+        theme_minimal() +
+        theme(axis.text.y = element_blank(),
+              legend.title = element_blank()) +
+        scale_fill_squba(palette = 'diverging', discrete = FALSE) +
+        labs(x ='Euclidean Distance',
+             y = '',
+             title = paste0('Distribution of Euclidean Distances'))
+
+    }else{
+
+      q <- q + geom_line(data = dat_to_plot %>% filter(site %in% large_n_sites),
+                         aes(y = stat_value, color = site, group = site),
+                         linewidth=0.2) +
+        geom_point_interactive(data = dat_to_plot %>% filter(site %in% large_n_sites),
+                               aes(y = stat_value, color = site, group = site, tooltip=text_raw))
+
+      t <- dat_to_plot %>%
+        distinct(value_type,dist_eucl_mean) %>%
+        ggplot(aes(x = dist_eucl_mean, y = value_type)) +
+        geom_boxplot() +
+        geom_point_interactive(data = dat_to_plot %>% filter(site %in% large_n_sites),
+                               aes(color = site, tooltip = dist_eucl_mean)) +
+        theme_minimal() +
+        theme(axis.text.y = element_blank(),
+              legend.title = element_blank()) +
+        scale_fill_squba(palette = 'diverging', discrete = FALSE) +
+        scale_color_squba() +
+        labs(x ='Euclidean Distance',
+             y = '',
+             title = paste0('Distribution of Euclidean Distances'))
+    }
+
+    q[['metadata']] <- tibble('pkg_backend' = 'ggiraph',
+                              'tooltip' = TRUE)
+    t[['metadata']] <- tibble('pkg_backend' = 'ggiraph',
+                              'tooltip' = TRUE)
+
+    output <- q + t + plot_layout(ncol = 1, heights = c(5, 1))
+  }
 
   return(output)
 }

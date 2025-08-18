@@ -13,6 +13,9 @@
 #' @param display_outliers *boolean* | for boxplot output, a boolean to indicate whether outliers should be displayed; defaults to FALSE
 #' @param summary_stat *string* | a string indicating the summary statistic that should be displayed on the plot; required for
 #'                     exploratory, longitudinal results; defaults to `mean`, but `median`, `q1`, `q3`, or `sd` are also accepted
+#' @param large_n *boolean* | for multi site analyses, a boolean indicating whether the large N visualization, intended for a high
+#'                volume of sites, should be used; defaults to FALSE
+#' @param large_n_sites *vector* | when large_n is TRUE, a vector of site names that can optionally generate a filtered visualization
 #'
 #' @returns a graph to visualize the results from `qvd_process` based on the parameters provided; see documentation
 #'          for individual subfunctions for details on specific output
@@ -20,6 +23,7 @@
 #'
 #' @import ggplot2
 #' @import ggiraph
+#' @import gt
 #' @import patchwork
 #' @importFrom grDevices colorRampPalette
 #' @importFrom ggdist stat_halfeye
@@ -29,7 +33,9 @@ qvd_output <- function(process_output,
                        value_type_filter = NULL,
                        frequency_min = 5,
                        display_outliers = FALSE,
-                       summary_stat = 'mean'){
+                       summary_stat = 'mean',
+                       large_n = FALSE,
+                       large_n_sites = NULL){
 
   output_string <- process_output %>% ungroup() %>%
     distinct(output_function) %>% pull()
@@ -43,12 +49,16 @@ qvd_output <- function(process_output,
     qvd_plt <- qvd_ms_exp_cs(process_output = process_output,
                              display_outliers = display_outliers,
                              frequency_min = frequency_min,
-                             value_type_filter = value_type_filter)
+                             value_type_filter = value_type_filter,
+                             large_n = large_n,
+                             large_n_sites = large_n_sites)
   }else if(output_string == 'qvd_ss_anom_cs'){
     qvd_plt <- qvd_ss_anom_cs(process_output = process_output)
   }else if(output_string == 'qvd_ms_anom_cs'){
     qvd_plt <- qvd_ms_anom_cs(process_output = process_output,
-                              value_type_filter = value_type_filter)
+                              value_type_filter = value_type_filter,
+                              large_n = large_n,
+                              large_n_sites = large_n_sites)
   }else if(output_string == 'qvd_ss_exp_la'){
     qvd_plt <- qvd_ss_exp_la(process_output = process_output,
                              value_type_filter = value_type_filter,
@@ -56,13 +66,17 @@ qvd_output <- function(process_output,
   }else if(output_string == 'qvd_ms_exp_la'){
     qvd_plt <- qvd_ms_exp_la(process_output = process_output,
                              value_type_filter = value_type_filter,
-                             summary_stat = summary_stat)
+                             summary_stat = summary_stat,
+                             large_n = large_n,
+                             large_n_sites = large_n_sites)
   }else if(output_string == 'qvd_ss_anom_la'){
     qvd_plt <- qvd_ss_anom_la(process_output = process_output,
                               value_type_filter = value_type_filter)
   }else if(output_string == 'qvd_ms_anom_la'){
     qvd_plt <- qvd_ms_anom_la(process_output = process_output,
-                              value_type_filter = value_type_filter)
+                              value_type_filter = value_type_filter,
+                              large_n = large_n,
+                              large_n_sites = large_n_sites)
   }
 
   return(qvd_plt)
