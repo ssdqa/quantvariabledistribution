@@ -9,7 +9,9 @@ qvd_output(
   value_type_filter = NULL,
   frequency_min = 5,
   display_outliers = FALSE,
-  summary_stat = "mean"
+  summary_stat = "mean",
+  large_n = FALSE,
+  large_n_sites = NULL
 )
 }
 \arguments{
@@ -24,6 +26,11 @@ aimed at trimming infrequently occurring outliers for a cleaner plot; defaults t
 
 \item{summary_stat}{\emph{string} | a string indicating the summary statistic that should be displayed on the plot; required for
 exploratory, longitudinal results; defaults to \code{mean}, but \code{median}, \code{q1}, \code{q3}, or \code{sd} are also accepted}
+
+\item{large_n}{\emph{boolean} | for multi site analyses, a boolean indicating whether the large N visualization, intended for a high
+volume of sites, should be used; defaults to FALSE}
+
+\item{large_n_sites}{\emph{vector} | when large_n is TRUE, a vector of site names that can optionally generate a filtered visualization}
 }
 \value{
 a graph to visualize the results from \code{qvd_process} based on the parameters provided; see documentation

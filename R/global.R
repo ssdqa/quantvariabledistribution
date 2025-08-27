@@ -5,4 +5,4 @@ utils::globalVariables(c('allsite_var', 'alltime_sd', 'date_numeric', 'dist_eucl
                        'output_function', 'prop_outlier', 'q1_val', 'q3_val', 'sd_threshold', 'sd_val', 'site',
                        'site_frequency', 'site_loess', 'site_prop', 'site_total', 'start_date', 'stat_value',
                        'text_raw', 'text_smooth', 'time_end', 'time_increment', 'time_start', 'tooltip',
-                       'total_vals', 'value_col', 'value_type', 'zscore', 'value_freq'))
+                       'total_vals', 'value_col', 'value_type', 'zscore', 'value_freq', 'q1', 'q3'))

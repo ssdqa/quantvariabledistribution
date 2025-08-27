@@ -35,6 +35,7 @@ Imports:
     ggiraph (>= 0.8.0),
     ggplot2 (>= 3.5.0),
     grDevices (>= 4.4.0),
+    gt (>= 1.0.0),
     magrittr,
     patchwork (>= 1.2.0),
     philentropy (>= 0.9.0),

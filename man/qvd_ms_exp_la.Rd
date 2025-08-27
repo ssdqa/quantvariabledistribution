@@ -4,7 +4,13 @@
 \alias{qvd_ms_exp_la}
 \title{\emph{Multi Site, Exploratory, Longitudinal}}
 \usage{
-qvd_ms_exp_la(process_output, value_type_filter = NULL, summary_stat = "mean")
+qvd_ms_exp_la(
+  process_output,
+  value_type_filter = NULL,
+  summary_stat = "mean",
+  large_n = FALSE,
+  large_n_sites = NULL
+)
 }
 \arguments{
 \item{process_output}{the output of the \code{qvd_process} function}
@@ -13,6 +19,11 @@ qvd_ms_exp_la(process_output, value_type_filter = NULL, summary_stat = "mean")
 
 \item{summary_stat}{a string indicating the summary statistic that should be displayed on the plot; required for
 exploratory, longitudinal results; defaults to \code{mean}, but \code{median}, \code{q1}, \code{q3}, or \code{sd} are also accepted}
+
+\item{large_n}{a boolean indicating whether the large N visualization, intended for a high
+volume of sites, should be used; defaults to FALSE}
+
+\item{large_n_sites}{a vector of site names that can optionally generate a filtered visualization}
 }
 \value{
 a line plot displaying the summary_stat of interest across the time period for each site
