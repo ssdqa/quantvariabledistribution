@@ -47,3 +47,4 @@ of interest and summary statistics (mean, median, q1, q3, sd) describing the dis
 \description{
 Compute quantitative variable distribution
 }
+\keyword{internal}

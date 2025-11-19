@@ -6,20 +6,53 @@
 #' be adjusted by the user after the graph has been output using `+ theme()`. Most graphs can
 #' also be made interactive using `make_interactive_squba()`
 #'
-#' @param process_output *tabular output* | the output of the `qvd_process` function
-#' @param value_type_filter *string / vector* | a string or vector of strings to filter the graph to specific variables of interest
-#' @param frequency_min *integer* | an integer to establish a minimum amount of times a value should occur to be included in the output;
-#'                      aimed at trimming infrequently occurring outliers for a cleaner plot; defaults to 5
-#' @param display_outliers *boolean* | for boxplot output, a boolean to indicate whether outliers should be displayed; defaults to FALSE
-#' @param summary_stat *string* | a string indicating the summary statistic that should be displayed on the plot; required for
-#'                     exploratory, longitudinal results; defaults to `mean`, but `median`, `q1`, `q3`, or `sd` are also accepted
-#' @param large_n *boolean* | for multi site analyses, a boolean indicating whether the large N visualization, intended for a high
-#'                volume of sites, should be used; defaults to FALSE
-#' @param large_n_sites *vector* | when large_n is TRUE, a vector of site names that can optionally generate a filtered visualization
+#' @param process_output *tabular input* || **required**
 #'
-#' @returns a graph to visualize the results from `qvd_process` based on the parameters provided; see documentation
-#'          for individual subfunctions for details on specific output
-#' @export
+#'   The tabular output produced by `qvd_process`
+#'
+#' @param value_type_filter *string or vector* || defaults to `NULL`
+#'
+#'   A string or vector of strings to filter the graph to specific variables of interest.
+#'
+#'   A single variable is required to be input in this parameter for the
+#'   `Multi-Site, Anomaly Detection, Longitudinal` check. For all others, it is
+#'   not required but we recommend limiting to 5 variable or fewer to maintain visibility.
+#'
+#' @param frequency_min *integer* || defaults to `5`
+#'
+#'   An integer indicating the minimum amount of times a value should occur to be
+#'   included in the output. This parameter is aimed at trimming infrequently occurring
+#'   outliers for a cleaner plot.
+#'
+#' @param display_outliers *boolean* || defaults to `FALSE`
+#'
+#'   For boxplot output, a boolean to indicate whether outliers should be displayed
+#'
+#' @param summary_stat *string* || defaults to `mean`
+#'
+#'   A string indicating the summary statistic that should be displayed on the plot. This is
+#'   a required for each `Exploratory, Longitudinal` output.
+#'
+#'   Acceptable values are `mean`, `median`, `q1`, `q3`, or `sd`
+#'
+#' @param large_n *boolean* || defaults to `FALSE`
+#'
+#'   For Multi-Site analyses, a boolean indicating whether the large N
+#'   visualization, intended for a high volume of sites, should be used. This
+#'   visualization will produce high level summaries across all sites, with an
+#'   option to add specific site comparators via the `large_n_sites` parameter.
+#'
+#' @param large_n_sites *vector* || defaults to `NULL`
+#'
+#'   When `large_n = TRUE`, a vector of site names that can add site-level information
+#'   to the plot for comparison across the high level summary information.
+#'
+#' @returns This function will produce a graph to visualize the results
+#'         from `qvd_process` based on the parameters provided. The default
+#'         output is typically a static ggplot or gt object, but interactive
+#'         elements can be activated by passing the plot through `make_interactive_squba`.
+#'         For a more detailed description of output specific to each check type,
+#'         see the PEDSpace metadata repository
 #'
 #' @import ggplot2
 #' @import ggiraph
@@ -28,6 +61,10 @@
 #' @importFrom grDevices colorRampPalette
 #' @importFrom ggdist stat_halfeye
 #' @importFrom stringr str_to_sentence
+#'
+#' @example inst/example-qvd_process_output.R
+#'
+#' @export
 #'
 qvd_output <- function(process_output,
                        value_type_filter = NULL,

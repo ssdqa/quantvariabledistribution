@@ -28,6 +28,8 @@
 #' @importFrom rlang parse_expr
 #' @importFrom rlang :=
 #'
+#' @keywords internal
+#'
 compute_quant_val_dist <- function(qvd_value_file,
                                    cohort = results_tbl('scd_cohort'),
                                    grouped_list = 'site',
@@ -110,11 +112,11 @@ compute_quant_val_dist <- function(qvd_value_file,
     stat_sum <- get_values %>%
       uncount(value_freq) %>%
       group_by(value_type, .add = TRUE) %>%
-      summarise(mean_val = mean(value_col, na.rm = TRUE),
-                median_val = median(value_col, na.rm = TRUE),
-                sd_val = sd(value_col, na.rm = TRUE),
-                q1_val = quantile(value_col, 0.25, na.rm = TRUE),
-                q3_val = quantile(value_col, 0.75, na.rm = TRUE)) %>%
+      summarise(mean_val = mean(as.numeric(value_col), na.rm = TRUE),
+                median_val = median(as.numeric(value_col), na.rm = TRUE),
+                sd_val = sd(as.numeric(value_col), na.rm = TRUE),
+                q1_val = quantile(as.numeric(value_col), 0.25, na.rm = TRUE),
+                q3_val = quantile(as.numeric(value_col), 0.75, na.rm = TRUE)) %>%
       mutate(across(where(is.numeric), ~replace_na(., NA)))
 
     freq_rslt[[i]] <- get_values
@@ -150,6 +152,8 @@ compute_quant_val_dist <- function(qvd_value_file,
 #'
 #' @importFrom philentropy KL
 #' @importFrom tibble column_to_rownames
+#'
+#' @keywords internal
 #'
 compute_kl_divergence <- function(frequency_tbl,
                                   kl_log_base = 'log2'){
@@ -247,6 +251,8 @@ compute_kl_divergence <- function(frequency_tbl,
 #' @importFrom stats predict
 #' @importFrom stats frequency
 #'
+#' @keywords internal
+#'
 qvd_euclidean <- function(fot_input_tbl,
                           grp_vars,
                           euclidean_stat = 'mean'){
@@ -261,11 +267,11 @@ qvd_euclidean <- function(fot_input_tbl,
   allsite_stats <- ms_at_cj %>%
     uncount(value_freq) %>%
     group_by(!!!syms(update_grpvr), time_start, time_increment) %>%
-    summarise(allsite_mean = mean(value_col, na.rm = TRUE),
-              allsite_median = median(value_col, na.rm = TRUE),
-              allsite_sd = sd(value_col, na.rm = TRUE),
-              allsite_q1 = quantile(value_col, 0.25, na.rm = TRUE),
-              allsite_q3 = quantile(value_col, 0.75, na.rm = TRUE)) %>%
+    summarise(allsite_mean = mean(as.numeric(value_col), na.rm = TRUE),
+              allsite_median = median(as.numeric(value_col), na.rm = TRUE),
+              allsite_sd = sd(as.numeric(value_col), na.rm = TRUE),
+              allsite_q1 = quantile(as.numeric(value_col), 0.25, na.rm = TRUE),
+              allsite_q3 = quantile(as.numeric(value_col), 0.75, na.rm = TRUE)) %>%
     mutate(across(where(is.numeric), ~replace_na(., NA)))
 
   site_summ <- ms_at_cj %>%

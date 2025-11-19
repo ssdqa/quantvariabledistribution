@@ -28,3 +28,4 @@ showing the summary of the distribution
 \description{
 \emph{Single Site, Exploratory, Cross-Sectional}
 }
+\keyword{internal}

@@ -24,3 +24,4 @@ and the additional grp_vars provided
 \description{
 Euclidean distance for QVD
 }
+\keyword{internal}

@@ -11,80 +11,116 @@ qvd_process(
   anomaly_or_exploratory = "exploratory",
   omop_or_pcornet,
   time = FALSE,
-  time_span = c("2015-01-01", "2025-01-01"),
+  time_span = c("2012-01-01", "2020-01-01"),
   time_period = "year",
-  age_groups = FALSE,
+  age_groups = NULL,
   sd_threshold = 2,
   kl_log_base = "log2",
   euclidean_stat = "mean"
 )
 }
 \arguments{
-\item{cohort}{\emph{tabular input} | A dataframe with the cohort of patients for your study. Should include the columns:
-\itemize{
-\item \code{person_id} / \code{patid} | \emph{integer} / \emph{character}
-\item \code{start_date} | \emph{date}
-\item \code{end_date} | \emph{date}
-\item \code{site} | \emph{character}
-}}
+\item{cohort}{\emph{tabular input} || \strong{required}
 
-\item{qvd_value_file}{\emph{tabular input} | dataframe or CSV file with information about each of the variables that should be
-examined in the function. contains the following columns:
+The cohort to be used for data quality testing. This table should contain,
+at minimum:
+\itemize{
+\item \code{site} | \emph{character} | the name(s) of institutions included in your cohort
+\item \code{person_id} / \code{patid} | \emph{integer} / \emph{character} | the patient identifier
+\item \code{start_date} | \emph{date} | the start of the cohort period
+\item \code{end_date} | \emph{date} | the end of the cohort period
+}
+
+Note that the start and end dates included in this table will be used to
+limit the search window for the analyses in this module.}
+
+\item{qvd_value_file}{\emph{tabular input} || \strong{required}
+
+A dataframe or CSV file with information about each of the variables that should be
+examined in the function. Should contain the following columns:
 \itemize{
 \item \code{value_name} | \emph{string} | a string label for the value variable
 \item \code{domain_tbl} | \emph{character} | CDM table where the value data is found
 \item \code{value_field} | \emph{character} | the name of the field with the quantitative variable OR the name of the person identifier column for patient count checks
-\item \code{date_field} | \emph{character} | a date field in the \code{domain_tbl} that should be used for over time analyses
-\item \code{concept_field} | \emph{character} | concept_id field with codes from the associated codeset (only needed when codeset is provided)
-\item \code{codeset_name} | \emph{character} | the name of the codeset file; DO NOT include the file extension; optional
-\item \code{vocabulary_field} | \emph{character} | \emph{PCORNET ONLY} the name of the column where the vocabulary type associated with the concepts are stored (typically dx_type or px_type, where needed)
-\item \code{filter_logic} | \emph{character} | a string indicating filter logic that should be applied to achieve the desired variable; optional
-}}
+\item \code{date_field} | \emph{character} | a date field in the \code{domain_tbl} that should be used for temporal filtering
+\item \code{concept_field} | \emph{character} | the string name of the field in the domain table where the concepts are located (only needed when codeset is provided)
+\item \code{codeset_name} | \emph{character} | optional field to include the name of a codeset file
+\item \code{vocabulary_field} | \emph{character} | for PCORnet applications, the name of the field in the domain table with a vocabulary identifier to differentiate concepts from one another (ex: dx_type); can be set to NA for OMOP applications
+\item \code{filter_logic} | \emph{character} | logic to be applied to the domain_tbl in order to achieve the definition of interest; should be written as if you were applying it in a dplyr::filter command in R
+}
 
-\item{multi_or_single_site}{\emph{string} | Option to run the function on a single vs multiple sites
-\itemize{
-\item \code{single}: run the function for a single site
-\item \code{multi}: run the function for multiple sites
-}}
+To see an example of what this input should look like, see \code{?quantvariabledistribution::qvd_value_file_omop} or
+\code{?quantvariabledistribution::qvd_value_file_pcornet}}
 
-\item{anomaly_or_exploratory}{\emph{string} | Option to conduct an exploratory or anomaly detection analysis. Exploratory analyses give a high
-level summary of the data to examine the fact representation within the cohort. Anomaly detection
-analyses are specialized to identify outliers within the cohort.}
+\item{multi_or_single_site}{\emph{string} || defaults to \code{single}
 
-\item{omop_or_pcornet}{\emph{string} | Option to run the function using the OMOP or PCORnet CDM as the default CDM
-accepts \code{omop} or \code{pcornet}}
+A string, either \code{single} or \code{multi}, indicating whether a single-site or
+multi-site analysis should be executed}
 
-\item{time}{\emph{boolean} | a logical that tells the function whether you would like to look at the output over time}
+\item{anomaly_or_exploratory}{\emph{string} || defaults to \code{exploratory}
 
-\item{time_span}{\emph{vector - length 2} | when time = TRUE, this argument defines the start and end dates for the time period of interest. should be
-formatted as c(start date, end date) in yyyy-mm-dd date format}
+A string, either \code{anomaly} or \code{exploratory}, indicating what type of results
+should be produced.
 
-\item{time_period}{\emph{string} | when time = TRUE, this argument defines the distance between dates within the specified time period. defaults
-to \code{year}, but other time periods such as \code{month} or \code{week} are also acceptable}
+Exploratory analyses give a high level summary of the data to examine the
+fact representation within the cohort. Anomaly detection analyses are
+specialized to identify outliers within the cohort.}
 
-\item{age_groups}{\emph{tabular input} | If you would like to stratify the results by age group,  create a table or CSV file with the following
-columns and include it as the \code{age_groups} function parameter:
+\item{omop_or_pcornet}{\emph{string} || \strong{required}
+
+A string, either \code{omop} or \code{pcornet}, indicating the CDM format of the data}
+
+\item{time}{\emph{boolean} || defaults to \code{FALSE}
+
+A boolean to indicate whether to execute a longitudinal analysis}
+
+\item{time_span}{\emph{vector - length 2} || defaults to \code{c('2012-01-01', '2020-01-01')}
+
+A vector indicating the lower and upper bounds of the time series for longitudinal analyses}
+
+\item{time_period}{\emph{string} || defaults to \code{year}
+
+A string indicating the distance between dates within the specified time_span.
+Defaults to \code{year}, but other time periods such as \code{month} or \code{week} are
+also acceptable}
+
+\item{age_groups}{\emph{tabular input} || defaults to \code{NULL}
+
+If you would like to stratify the results by age group, create a table or
+CSV file with the following columns and use it as input to this parameter:
 \itemize{
 \item \code{min_age} | \emph{integer} | the minimum age for the group (i.e. 10)
 \item \code{max_age} | \emph{integer} | the maximum age for the group (i.e. 20)
 \item \code{group} | \emph{character} | a string label for the group (i.e. 10-20, Young Adult, etc.)
 }
 
-If you would \emph{not} like to stratify by age group, leave the argument as NULL}
+If you would \emph{not} like to stratify by age group, leave as \code{NULL}}
 
-\item{sd_threshold}{\emph{integer} | value indicating the number of standard deviations a value should
-fall away from the mean to be considered an outlier; used for single site,
-anomaly detection configurations}
+\item{sd_threshold}{\emph{integer} || defaults to \code{2}
 
-\item{kl_log_base}{\emph{string} | string indicating the log base that should be used for the Kullback-Liebler
-divergence computation; acceptable values are: \code{log}, \code{log2}, \code{log10}; defaults to \code{log2}}
+An integer indicating the number of standard deviations a value should fall
+away from the mean to be considered an outlier. This will be applied to each of
+the \verb{Single Site, Anomaly Detection} checks}
 
-\item{euclidean_stat}{\emph{string} | string indicating the summary statistic that should be used for the
-euclidean distance computation; defaults to \code{mean}, \code{median} is also accepted}
+\item{kl_log_base}{\emph{string} || defaults to \code{log2}
+
+A string indicating the log base that should be used for the Kullback-Liebler
+divergence computation
+
+Acceptable values are: \code{log}, \code{log2}, \code{log10}}
+
+\item{euclidean_stat}{\emph{string} || defaults to \code{mean}
+
+A string indicating the summary statistic that should be used for the
+euclidean distance computation in the \verb{Multi-Site, Anomaly Detection, Longitudinal} check
+
+Acceptable values are \code{mean} or \code{median}}
 }
 \value{
-a dataframe with the frequency distribution for each value associated with the variable
-of interest and summary statistics (mean, median, q1, q3, sd) describing the distribution
+This function will return a dataframe summarizing the
+frequency distribution of each quantitative variable. For a
+more detailed description of output specific to each check type,
+see the PEDSpace metadata repository
 }
 \description{
 This is a plausibility module that will evaluate the distribution of either quantitative
@@ -95,4 +131,66 @@ data in the package and are accessible with \verb{quantvariabledistribution::}.
 Results can optionally be stratified by site, age group, and/or time. This
 function is compatible with both the OMOP and the PCORnet CDMs based on the user's
 selection.
+}
+\examples{
+
+#' Source setup file
+source(system.file('setup.R', package = 'quantvariabledistribution'))
+
+#' Create in-memory RSQLite database using data in extdata directory
+conn <- mk_testdb_omop()
+
+#' Establish connection to database and generate internal configurations
+initialize_dq_session(session_name = 'qvd_process_test',
+                      working_directory = my_directory,
+                      db_conn = conn,
+                      is_json = FALSE,
+                      file_subdirectory = my_file_folder,
+                      cdm_schema = NA)
+
+#' Build mock study cohort
+cohort <- cdm_tbl('person') \%>\% dplyr::distinct(person_id) \%>\%
+  dplyr::mutate(start_date = -10000, # RSQLite does not store date objects,
+                                      # hence the numerics
+                end_date = 30000,
+                site = ifelse(person_id \%in\% 1:6, 'synth1', 'synth2'))
+
+#' Create `qvd_value_file` input
+qvd_input <- dplyr::tibble('value_name' = c('ibuprofen days supply',
+                                            'outpatient visits'),
+                           'domain_tbl' = c("drug_exposure",
+                                            'visit_occurrence'),
+                           'value_field' = c('days_supply',
+                                             'person_id'),
+                           'date_field' = c('drug_exposure_start_date',
+                                            'visit_start_date'),
+                           'concept_field' = c('drug_concept_id',
+                                               NA),
+                           'codeset_name' = c('rx_ibuprofen',
+                                              NA),
+                           'filter_logic' = c(NA,
+                                              'visit_concept_id == 9202'))
+
+#' Execute `qvd_process` function
+#' This example will use the single site, exploratory, cross sectional
+#' configuration
+qvd_process_example <- qvd_process(cohort = cohort,
+                                   multi_or_single_site = 'single',
+                                   anomaly_or_exploratory = 'exploratory',
+                                   time = FALSE,
+                                   omop_or_pcornet = 'omop',
+                                   qvd_value_file = qvd_input) \%>\%
+  suppressMessages()
+
+qvd_process_example
+
+#' Execute qvd_output` function
+qvd_output_example <- qvd_output(process_output = qvd_process_example)
+
+qvd_output_example
+
+#' Easily convert the graph into an interactive ggiraph or plotly object with
+#' `make_interactive_squba()`
+
+make_interactive_squba(qvd_output_example)
 }

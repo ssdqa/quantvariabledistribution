@@ -10,51 +10,101 @@
 #' function is compatible with both the OMOP and the PCORnet CDMs based on the user's
 #' selection.
 #'
-#' @param cohort *tabular input* | A dataframe with the cohort of patients for your study. Should include the columns:
-#' - `person_id` / `patid` | *integer* / *character*
-#' - `start_date` | *date*
-#' - `end_date` | *date*
-#' - `site` | *character*
-#' @param qvd_value_file *tabular input* | dataframe or CSV file with information about each of the variables that should be
-#' examined in the function. contains the following columns:
-#' - `value_name` | *string* | a string label for the value variable
-#' - `domain_tbl` | *character* | CDM table where the value data is found
-#' - `value_field` | *character* | the name of the field with the quantitative variable OR the name of the person identifier column for patient count checks
-#' - `date_field` | *character* | a date field in the `domain_tbl` that should be used for over time analyses
-#' - `concept_field` | *character* | concept_id field with codes from the associated codeset (only needed when codeset is provided)
-#' - `codeset_name` | *character* | the name of the codeset file; DO NOT include the file extension; optional
-#' - `vocabulary_field` | *character* | *PCORNET ONLY* the name of the column where the vocabulary type associated with the concepts are stored (typically dx_type or px_type, where needed)
-#' - `filter_logic` | *character* | a string indicating filter logic that should be applied to achieve the desired variable; optional
-#' @param multi_or_single_site *string* | Option to run the function on a single vs multiple sites
-#' - `single`: run the function for a single site
-#' - `multi`: run the function for multiple sites
-#' @param anomaly_or_exploratory *string* | Option to conduct an exploratory or anomaly detection analysis. Exploratory analyses give a high
-#' level summary of the data to examine the fact representation within the cohort. Anomaly detection
-#' analyses are specialized to identify outliers within the cohort.
-#' @param omop_or_pcornet *string* | Option to run the function using the OMOP or PCORnet CDM as the default CDM
-#'                        accepts `omop` or `pcornet`
-#' @param time *boolean* | a logical that tells the function whether you would like to look at the output over time
-#' @param time_span *vector - length 2* | when time = TRUE, this argument defines the start and end dates for the time period of interest. should be
-#'                  formatted as c(start date, end date) in yyyy-mm-dd date format
-#' @param time_period *string* | when time = TRUE, this argument defines the distance between dates within the specified time period. defaults
-#'                    to `year`, but other time periods such as `month` or `week` are also acceptable
-#' @param age_groups *tabular input* | If you would like to stratify the results by age group,  create a table or CSV file with the following
-#'                    columns and include it as the `age_groups` function parameter:
-#' - `min_age` | *integer* | the minimum age for the group (i.e. 10)
-#' - `max_age` | *integer* | the maximum age for the group (i.e. 20)
-#' - `group` | *character* | a string label for the group (i.e. 10-20, Young Adult, etc.)
+#' @param cohort *tabular input* || **required**
 #'
-#' If you would *not* like to stratify by age group, leave the argument as NULL
-#' @param sd_threshold *integer* | value indicating the number of standard deviations a value should
-#'                      fall away from the mean to be considered an outlier; used for single site,
-#'                      anomaly detection configurations
-#' @param kl_log_base *string* | string indicating the log base that should be used for the Kullback-Liebler
-#'                     divergence computation; acceptable values are: `log`, `log2`, `log10`; defaults to `log2`
-#' @param euclidean_stat *string* | string indicating the summary statistic that should be used for the
-#'                        euclidean distance computation; defaults to `mean`, `median` is also accepted
+#'   The cohort to be used for data quality testing. This table should contain,
+#'   at minimum:
+#'   - `site` | *character* | the name(s) of institutions included in your cohort
+#'   - `person_id` / `patid` | *integer* / *character* | the patient identifier
+#'   - `start_date` | *date* | the start of the cohort period
+#'   - `end_date` | *date* | the end of the cohort period
 #'
-#' @returns a dataframe with the frequency distribution for each value associated with the variable
-#'          of interest and summary statistics (mean, median, q1, q3, sd) describing the distribution
+#'   Note that the start and end dates included in this table will be used to
+#'   limit the search window for the analyses in this module.
+#'
+#' @param qvd_value_file *tabular input* || **required**
+#'
+#'   A dataframe or CSV file with information about each of the variables that should be
+#'   examined in the function. Should contain the following columns:
+#'   - `value_name` | *string* | a string label for the value variable
+#'   - `domain_tbl` | *character* | CDM table where the value data is found
+#'   - `value_field` | *character* | the name of the field with the quantitative variable OR the name of the person identifier column for patient count checks
+#'   - `date_field` | *character* | a date field in the `domain_tbl` that should be used for temporal filtering
+#'   - `concept_field` | *character* | the string name of the field in the domain table where the concepts are located (only needed when codeset is provided)
+#'   - `codeset_name` | *character* | optional field to include the name of a codeset file
+#'   - `vocabulary_field` | *character* | for PCORnet applications, the name of the field in the domain table with a vocabulary identifier to differentiate concepts from one another (ex: dx_type); can be set to NA for OMOP applications
+#'   - `filter_logic` | *character* | logic to be applied to the domain_tbl in order to achieve the definition of interest; should be written as if you were applying it in a dplyr::filter command in R
+#'
+#'   To see an example of what this input should look like, see `?quantvariabledistribution::qvd_value_file_omop` or
+#'   `?quantvariabledistribution::qvd_value_file_pcornet`
+#'
+#' @param multi_or_single_site  *string* || defaults to `single`
+#'
+#'   A string, either `single` or `multi`, indicating whether a single-site or
+#'   multi-site analysis should be executed
+#'
+#' @param anomaly_or_exploratory *string* || defaults to `exploratory`
+#'
+#'   A string, either `anomaly` or `exploratory`, indicating what type of results
+#'   should be produced.
+#'
+#'   Exploratory analyses give a high level summary of the data to examine the
+#'   fact representation within the cohort. Anomaly detection analyses are
+#'   specialized to identify outliers within the cohort.
+#'
+#' @param omop_or_pcornet *string* || **required**
+#'
+#'   A string, either `omop` or `pcornet`, indicating the CDM format of the data
+#'
+#' @param time *boolean* || defaults to `FALSE`
+#'
+#'   A boolean to indicate whether to execute a longitudinal analysis
+#'
+#' @param time_span *vector - length 2* || defaults to `c('2012-01-01', '2020-01-01')`
+#'
+#'   A vector indicating the lower and upper bounds of the time series for longitudinal analyses
+#'
+#' @param time_period *string* || defaults to `year`
+#'
+#'   A string indicating the distance between dates within the specified time_span.
+#'   Defaults to `year`, but other time periods such as `month` or `week` are
+#'   also acceptable
+#'
+#' @param age_groups *tabular input* || defaults to `NULL`
+#'
+#'   If you would like to stratify the results by age group, create a table or
+#'   CSV file with the following columns and use it as input to this parameter:
+#'
+#'   - `min_age` | *integer* | the minimum age for the group (i.e. 10)
+#'   - `max_age` | *integer* | the maximum age for the group (i.e. 20)
+#'   - `group` | *character* | a string label for the group (i.e. 10-20, Young Adult, etc.)
+#'
+#'   If you would *not* like to stratify by age group, leave as `NULL`
+#'
+#' @param sd_threshold *integer* || defaults to `2`
+#'
+#'   An integer indicating the number of standard deviations a value should fall
+#'   away from the mean to be considered an outlier. This will be applied to each of
+#'   the `Single Site, Anomaly Detection` checks
+#'
+#' @param kl_log_base *string* || defaults to `log2`
+#'
+#'   A string indicating the log base that should be used for the Kullback-Liebler
+#'   divergence computation
+#'
+#'   Acceptable values are: `log`, `log2`, `log10`
+#'
+#' @param euclidean_stat *string* || defaults to `mean`
+#'
+#'   A string indicating the summary statistic that should be used for the
+#'   euclidean distance computation in the `Multi-Site, Anomaly Detection, Longitudinal` check
+#'
+#'   Acceptable values are `mean` or `median`
+#'
+#' @returns This function will return a dataframe summarizing the
+#'          frequency distribution of each quantitative variable. For a
+#'          more detailed description of output specific to each check type,
+#'          see the PEDSpace metadata repository
 #'
 #' @importFrom stats sd
 #' @importFrom stats median
@@ -66,6 +116,8 @@
 #' @import tidyr
 #' @importFrom magrittr %>%
 #'
+#' @example inst/example-qvd_process_output.R
+#'
 #' @export
 #'
 qvd_process <- function(cohort,
@@ -74,9 +126,9 @@ qvd_process <- function(cohort,
                         anomaly_or_exploratory = 'exploratory',
                         omop_or_pcornet,
                         time = FALSE,
-                        time_span = c('2015-01-01', '2025-01-01'),
+                        time_span = c('2012-01-01', '2020-01-01'),
                         time_period = 'year',
-                        age_groups = FALSE,
+                        age_groups = NULL,
                         sd_threshold = 2,
                         kl_log_base = 'log2',
                         euclidean_stat = 'mean'){

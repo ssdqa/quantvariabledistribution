@@ -19,3 +19,4 @@ distribution compared to the overall, all-site distribution
 \description{
 Compute Kullback-Liebler divergence
 }
+\keyword{internal}

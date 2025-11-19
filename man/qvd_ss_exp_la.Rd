@@ -20,3 +20,4 @@ a line plot displaying the summary_stat of choice across the time span
 \description{
 \emph{Single Site, Exploratory, Longitudinal}
 }
+\keyword{internal}
