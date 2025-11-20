@@ -18,7 +18,7 @@ The multi-site analyses included in this suite are intended to be executed again
 
 After following the instructions to reproduce the analysis, you will also need to change the `output_function` column to tell the `qvd_output` function which check you executed. Reference the table below for the labels that are associated with each check:
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE}
 library(dplyr)
 
 dplyr::tibble('Check Type' = c('Multi Site, Exploratory, Cross-Sectional',
@@ -69,8 +69,9 @@ The `kl_log_base` value can be selected by the user out of the following options
 
 ```{r, eval=FALSE}
 
-df <- quantvariabledistribution:::compute_kl_divergence(frequency_tbl = my_table,
-                                                        kl_log_base = kl_log_base)
+df <- 
+  quantvariabledistribution:::compute_kl_divergence(frequency_tbl = my_table,
+                                                    kl_log_base = kl_log_base)
 
 ```
 
@@ -82,8 +83,9 @@ The `euclidean_stat` value can be either `mean` or `median`, as desired by the u
 
 ```{r, eval=FALSE}
 
-df <- quantvariabledistribution:::qvd_euclidean(fot_input_tbl = my_table,
-                                                grp_vars = c('site', 'value_type'),
-                                                euclidean_stat = euclidean_stat)
+df <- 
+  quantvariabledistribution:::qvd_euclidean(fot_input_tbl = my_table,
+                                            grp_vars = c('site', 'value_type'),
+                                            euclidean_stat = euclidean_stat)
 
 ```
