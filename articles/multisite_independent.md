@@ -11,15 +11,6 @@ also need to change the `output_function` column to tell the
 `qvd_output` function which check you executed. Reference the table
 below for the labels that are associated with each check:
 
-    #> 
-    #> Attaching package: 'dplyr'
-    #> The following objects are masked from 'package:stats':
-    #> 
-    #>     filter, lag
-    #> The following objects are masked from 'package:base':
-    #> 
-    #>     intersect, setdiff, setequal, union
-
 | Check Type                                     | output_function |
 |:-----------------------------------------------|:----------------|
 | Multi Site, Exploratory, Cross-Sectional       | qvd_ms_exp_cs   |
@@ -72,8 +63,9 @@ options: `log`, `log2`, or `log10`. The standard default is `log2`.
 
 ``` r
 
-df <- quantvariabledistribution:::compute_kl_divergence(frequency_tbl = my_table,
-                                                        kl_log_base = kl_log_base)
+df <- 
+  quantvariabledistribution:::compute_kl_divergence(frequency_tbl = my_table,
+                                                    kl_log_base = kl_log_base)
 ```
 
 ### Longitudinal
@@ -88,7 +80,8 @@ by the user.
 
 ``` r
 
-df <- quantvariabledistribution:::qvd_euclidean(fot_input_tbl = my_table,
-                                                grp_vars = c('site', 'value_type'),
-                                                euclidean_stat = euclidean_stat)
+df <- 
+  quantvariabledistribution:::qvd_euclidean(fot_input_tbl = my_table,
+                                            grp_vars = c('site', 'value_type'),
+                                            euclidean_stat = euclidean_stat)
 ```

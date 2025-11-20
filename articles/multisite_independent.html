@@ -83,14 +83,6 @@ multi-site analysis can be executed in these instances.</p>
 also need to change the <code>output_function</code> column to tell the
 <code>qvd_output</code> function which check you executed. Reference the
 table below for the labels that are associated with each check:</p>
-<pre><code><span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
-<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     filter, lag</span></span>
-<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span></code></pre>
 <table class="table">
 <thead><tr class="header">
 <th align="left">Check Type</th>
@@ -123,7 +115,7 @@ cross-sectional and longitudinal configurations.</p>
 <p>First, execute either of the <strong>Single Site,
 Exploratory</strong> analyses, configured appropriately for your study,
 against each data source.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ssdqa/quantvariabledistribution" class="external-link">quantvariabledistribution</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">my_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/qvd_process.html">qvd_process</a></span><span class="op">(</span>cohort <span class="op">=</span> <span class="va">my_cohort</span>,</span>
@@ -133,8 +125,8 @@ against each data source.</p>
 <span>                        <span class="va">...</span><span class="op">)</span></span></code></pre></div>
 <p>Then, combine these results into a single table with the different
 sites delineated in the <code>site</code> column.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>my_final_results <span class="ot">&lt;-</span> my_table1 <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">union</span>(my_table2) ... <span class="sc">%&gt;%</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">union</span>(my_table_n)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>my_final_results <span class="ot">&lt;-</span> my_table1 <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">union</span>(my_table2) ... <span class="sc">%&gt;%</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">union</span>(my_table_n)</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="multi-site-anomaly-detection">Multi Site Anomaly Detection<a class="anchor" aria-label="anchor" href="#multi-site-anomaly-detection"></a>
@@ -154,10 +146,11 @@ distribution.</p>
 <p>The <code>kl_log_base</code> value can be selected by the user out of
 the following options: <code>log</code>, <code>log2</code>, or
 <code>log10</code>. The standard default is <code>log2</code>.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">quantvariabledistribution</span><span class="fu">:::</span><span class="fu"><a href="../reference/compute_kl_divergence.html">compute_kl_divergence</a></span><span class="op">(</span>frequency_tbl <span class="op">=</span> <span class="va">my_table</span>,</span>
-<span>                                                        kl_log_base <span class="op">=</span> <span class="va">kl_log_base</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">df</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu">quantvariabledistribution</span><span class="fu">:::</span><span class="fu"><a href="../reference/compute_kl_divergence.html">compute_kl_divergence</a></span><span class="op">(</span>frequency_tbl <span class="op">=</span> <span class="va">my_table</span>,</span>
+<span>                                                    kl_log_base <span class="op">=</span> <span class="va">kl_log_base</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="longitudinal">Longitudinal<a class="anchor" aria-label="anchor" href="#longitudinal"></a>
@@ -168,11 +161,12 @@ compute the Euclidean distance from the site’s time series to the
 overall time series.</p>
 <p>The <code>euclidean_stat</code> value can be either <code>mean</code>
 or <code>median</code>, as desired by the user.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">quantvariabledistribution</span><span class="fu">:::</span><span class="fu"><a href="../reference/qvd_euclidean.html">qvd_euclidean</a></span><span class="op">(</span>fot_input_tbl <span class="op">=</span> <span class="va">my_table</span>,</span>
-<span>                                                grp_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'site'</span>, <span class="st">'value_type'</span><span class="op">)</span>,</span>
-<span>                                                euclidean_stat <span class="op">=</span> <span class="va">euclidean_stat</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">df</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu">quantvariabledistribution</span><span class="fu">:::</span><span class="fu"><a href="../reference/qvd_euclidean.html">qvd_euclidean</a></span><span class="op">(</span>fot_input_tbl <span class="op">=</span> <span class="va">my_table</span>,</span>
+<span>                                            grp_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'site'</span>, <span class="st">'value_type'</span><span class="op">)</span>,</span>
+<span>                                            euclidean_stat <span class="op">=</span> <span class="va">euclidean_stat</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
