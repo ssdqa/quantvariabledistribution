@@ -22,7 +22,7 @@ License: MPL-2.0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-URL: https://github.com/ssdqa/quantvariabledistribution, https://pedsnet.org/metadata/handle/20.500.14642/21
+URL: https://github.com/ssdqa/quantvariabledistribution, https://pedsnet.org/metadata/handle/20.500.14642/21, https://ssdqa.github.io/quantvariabledistribution/
 BugReports: https://github.com/ssdqa/quantvariabledistribution/issues
 Depends: 
     argos,
@@ -49,7 +49,10 @@ Remotes: ssdqa/squba.gen, PEDSnet/argos
 LazyData: true
 Suggests: 
     DBI,
+    knitr,
     readr,
+    rmarkdown,
     RSQLite,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+VignetteBuilder: knitr

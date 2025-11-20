@@ -1,0 +1,27 @@
+url: https://ssdqa.github.io/quantvariabledistribution/
+template:
+  bootstrap: 5
+  light-switch: true
+navbar:
+  left:
+  - text: 'squba Home'
+    href: https://ssdqa.github.io/squba/
+  - text: 'Reference'
+    href: reference/index.html
+  - text: 'Articles'
+    href: articles/index.html
+    menu:
+    - text: 'Multi-Site Analysis for Independent Data Sources'
+      href: articles/multisite_independent.html
+  - text: 'PEDSpace'
+    href: https://hdl.handle.net/20.500.14642/21
+reference:
+- title: 'Module Execution'
+  contents:
+  - qvd_process
+  - qvd_output
+- title: 'Sample Input'
+  contents:
+  - qvd_value_file_omop
+  - qvd_value_file_pcornet
+
