@@ -126,7 +126,8 @@ against each data source.</p>
 <p>Then, combine these results into a single table with the different
 sites delineated in the <code>site</code> column.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>my_final_results <span class="ot">&lt;-</span> my_table1 <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">union</span>(my_table2) ... <span class="sc">%&gt;%</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">union</span>(my_table_n)</span></code></pre></div>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">union</span>(my_table_n) <span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">output_function =</span> <span class="st">'{see table above}'</span>)</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="multi-site-anomaly-detection">Multi Site Anomaly Detection<a class="anchor" aria-label="anchor" href="#multi-site-anomaly-detection"></a>
@@ -150,7 +151,8 @@ the following options: <code>log</code>, <code>log2</code>, or
 <code class="sourceCode R"><span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu">quantvariabledistribution</span><span class="fu">:::</span><span class="fu"><a href="../reference/compute_kl_divergence.html">compute_kl_divergence</a></span><span class="op">(</span>frequency_tbl <span class="op">=</span> <span class="va">my_table</span>,</span>
-<span>                                                    kl_log_base <span class="op">=</span> <span class="va">kl_log_base</span><span class="op">)</span></span></code></pre></div>
+<span>                                                    kl_log_base <span class="op">=</span> <span class="va">kl_log_base</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>output_function <span class="op">=</span> <span class="st">'{see table above}'</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="longitudinal">Longitudinal<a class="anchor" aria-label="anchor" href="#longitudinal"></a>
@@ -166,7 +168,8 @@ or <code>median</code>, as desired by the user.</p>
 <span><span class="va">df</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu">quantvariabledistribution</span><span class="fu">:::</span><span class="fu"><a href="../reference/qvd_euclidean.html">qvd_euclidean</a></span><span class="op">(</span>fot_input_tbl <span class="op">=</span> <span class="va">my_table</span>,</span>
 <span>                                            grp_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'site'</span>, <span class="st">'value_type'</span><span class="op">)</span>,</span>
-<span>                                            euclidean_stat <span class="op">=</span> <span class="va">euclidean_stat</span><span class="op">)</span></span></code></pre></div>
+<span>                                            euclidean_stat <span class="op">=</span> <span class="va">euclidean_stat</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>output_function <span class="op">=</span> <span class="st">'{see table above}'</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

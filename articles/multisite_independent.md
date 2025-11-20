@@ -41,7 +41,8 @@ delineated in the `site` column.
 
 ``` r
 my_final_results <- my_table1 %>% dplyr::union(my_table2) ... %>%
-  dplyr::union(my_table_n)
+  dplyr::union(my_table_n) %>%
+  dplyr::mutate(output_function = '{see table above}')
 ```
 
 ## Multi Site Anomaly Detection
@@ -65,7 +66,8 @@ options: `log`, `log2`, or `log10`. The standard default is `log2`.
 
 df <- 
   quantvariabledistribution:::compute_kl_divergence(frequency_tbl = my_table,
-                                                    kl_log_base = kl_log_base)
+                                                    kl_log_base = kl_log_base) %>%
+  dplyr::mutate(output_function = '{see table above}')
 ```
 
 ### Longitudinal
@@ -83,5 +85,6 @@ by the user.
 df <- 
   quantvariabledistribution:::qvd_euclidean(fot_input_tbl = my_table,
                                             grp_vars = c('site', 'value_type'),
-                                            euclidean_stat = euclidean_stat)
+                                            euclidean_stat = euclidean_stat) %>%
+  dplyr::mutate(output_function = '{see table above}')
 ```
