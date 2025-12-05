@@ -206,7 +206,6 @@ initialize_dq_session(session_name = 'qvd_process_test',
                       file_subdirectory = my_file_folder,
                       cdm_schema = NA)
 #> Connected to: :memory:@NA
-#> To see environment settings, run `get_argos_default()`
 
 #' Build mock study cohort
 cohort <- cdm_tbl('person') %>% dplyr::distinct(person_id) %>%
