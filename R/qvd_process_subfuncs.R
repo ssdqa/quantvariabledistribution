@@ -257,7 +257,7 @@ qvd_euclidean <- function(fot_input_tbl,
                           grp_vars,
                           euclidean_stat = 'mean'){
 
-  update_grpvr <- grp_vars[!grp_vars %in% 'site']
+  update_grpvr <- grp_vars[!grp_vars %in% c('site', 'time_increment')]
 
   var_col <- paste0(euclidean_stat, '_val')
 
