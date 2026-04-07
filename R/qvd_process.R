@@ -236,7 +236,8 @@ qvd_process <- function(cohort,
 
       qvd_final <- qvd_euclidean(fot_input_tbl = qvd_tbl %>%
                                    replace_site_col(),
-                                 grp_vars = c('site', 'value_type'),
+                                 grp_vars = c('site', 'value_type',
+                                              'time_increment'),
                                  euclidean_stat = euclidean_stat)
 
     }else{qvd_final <- qvd_tbl}
