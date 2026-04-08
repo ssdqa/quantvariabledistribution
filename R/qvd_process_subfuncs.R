@@ -261,12 +261,14 @@ qvd_euclidean <- function(fot_input_tbl,
 
   var_col <- paste0(euclidean_stat, '_val')
 
-  ms_at_cj <- squba.gen:::compute_at_cross_join(cj_tbl=fot_input_tbl,
+  ms_at_cj <- squba.gen:::compute_at_cross_join(cj_tbl=fot_input_tbl %>%
+                                                  mutate(value_col = as.character(value_col)),
                                                 cj_var_names = grp_vars)
 
   allsite_stats <- ms_at_cj %>%
     uncount(value_freq) %>%
     group_by(!!!syms(update_grpvr), time_start, time_increment) %>%
+    mutate(value_col = as.numeric(value_col)) %>%
     summarise(allsite_mean = mean(as.numeric(value_col), na.rm = TRUE),
               allsite_median = median(as.numeric(value_col), na.rm = TRUE),
               allsite_sd = sd(as.numeric(value_col), na.rm = TRUE),
